@@ -1,10 +1,3 @@
-//
-//  Item.swift
-//  Vehiculum
-//
-//  Created by Gaetano Pascarella on 11/11/25.
-//
-
 import Foundation
 import SwiftData
 
