@@ -3,9 +3,9 @@ import UIKit
 import Foundation
 
 @Model
-class Car {
+final class Car {
     @Attribute(.unique) var id: UUID
-    var brand: String  
+    var brand: String
     var model: String
     var imageData: Data
     var date: Date
@@ -20,7 +20,6 @@ class Car {
         self.cloudKitRecordName = cloudKitRecordName
     }
     
-    // helper per ottenere UIImage dalla Data
     var image: UIImage {
         UIImage(data: imageData) ?? UIImage(systemName: "car.fill")!
     }

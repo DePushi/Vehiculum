@@ -7,6 +7,9 @@ struct CarFormView: View {
     
     @State private var brand: String = ""
     @State private var model: String = ""
+    @State private var isDetecting = false
+    @State private var detectionMessage: String = ""
+    @State private var showDetectionAlert = false
     @FocusState private var focusedField: Field?
     
     enum Field {
@@ -19,11 +22,39 @@ struct CarFormView: View {
                 Section {
                     Image(uiImage: image)
                         .resizable()
-                        .scaledToFit()
-                        .cornerRadius(12)
-                        .shadow(radius: 5)
+                        .scaledToFill()
+                        .frame(maxWidth: .infinity)
+                        .frame(height: 300)
+                        .clipped()
+                        .cornerRadius(10)
+                        .onTapGesture {
+                            focusedField = nil
+                        }
                 } header: {
                     Text("Car Photo")
+                }
+                
+                // SEZIONE DETECTION
+                Section {
+                    Button(action: detectMercedesLogo) {
+                        HStack {
+                            if isDetecting {
+                                ProgressView()
+                                    .scaleEffect(0.8)
+                                Text("Detecting...")
+                            } else {
+                                Image(systemName: "sparkles")
+                                Text("Detect Mercedes Logo")
+                            }
+                        }
+                        .frame(maxWidth: .infinity)
+                        .foregroundColor(isDetecting ? .secondary : .blue)
+                    }
+                    .disabled(isDetecting)
+                } header: {
+                    Text("AI Detection")
+                } footer: {
+                    Text("Use AI to automatically detect Mercedes logo")
                 }
                 
                 Section {
@@ -60,9 +91,39 @@ struct CarFormView: View {
                     }
                 }
             }
-            .onAppear {
-                focusedField = .brand
+            .alert("Detection Result", isPresented: $showDetectionAlert) {
+                Button("OK", role: .cancel) { }
+            } message: {
+                Text(detectionMessage)
             }
+        }
+    }
+    
+    private func detectMercedesLogo() {
+        isDetecting = true
+        focusedField = nil // Chiudi la tastiera
+        
+        MercedesDetectionService.shared.detectMercedesLogo(in: image) { success, message in
+            isDetecting = false
+            
+            if success {
+                // Logo Mercedes rilevato!
+                brand = "Mercedes"
+                detectionMessage = message ?? "Mercedes logo detected!"
+                
+                // Feedback tattile
+                let generator = UINotificationFeedbackGenerator()
+                generator.notificationOccurred(.success)
+            } else {
+                // Logo non rilevato
+                detectionMessage = message ?? "No Mercedes logo found. Please enter brand manually."
+                
+                // Feedback tattile
+                let generator = UINotificationFeedbackGenerator()
+                generator.notificationOccurred(.warning)
+            }
+            
+            showDetectionAlert = true
         }
     }
     

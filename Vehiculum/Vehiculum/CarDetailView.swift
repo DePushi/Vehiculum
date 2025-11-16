@@ -91,7 +91,6 @@ struct CarDetailView: View {
                 ToolbarItem(placement: .navigationBarLeading) {
                     Button(isEditing ? "Cancel" : "Close") {
                         if isEditing {
-                            // Annulla modifiche
                             editedBrand = car.brand
                             editedModel = car.model
                             isEditing = false
@@ -142,11 +141,9 @@ struct CarDetailView: View {
     }
     
     private func saveChanges() {
-        // Aggiorna il modello
         car.brand = editedBrand
         car.model = editedModel
         
-        // Salva con SwiftData
         do {
             try modelContext.save()
             isEditing = false
