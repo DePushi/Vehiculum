@@ -13,17 +13,17 @@ class CarManager: ObservableObject {
     private let cloudKitManager = CloudKitManager()
     private var modelContext: ModelContext?
     
-    // Indica se l'utente ha abilitato iCloud sync
+    
     var iCloudSyncEnabled: Bool = false
     
-    // Configura il ModelContext (chiamalo dal ContentView)
+    
     func configure(with context: ModelContext, iCloudEnabled: Bool) {
         self.modelContext = context
         self.iCloudSyncEnabled = iCloudEnabled
         
         loadCarsFromSwiftData()
         
-        // Sincronizza con CloudKit SOLO se iCloud è abilitato
+        
         if iCloudEnabled {
             syncWithCloudKit()
         } else {
@@ -31,7 +31,7 @@ class CarManager: ObservableObject {
         }
     }
     
-    // Carica auto da SwiftData locale
+    
     private func loadCarsFromSwiftData() {
         guard let context = modelContext else { return }
         
@@ -44,7 +44,7 @@ class CarManager: ObservableObject {
         }
     }
     
-    // Sincronizza con CloudKit (SOLO se iCloud è abilitato)
+    
     func syncWithCloudKit() {
         guard iCloudSyncEnabled else {
             print("⚠️ iCloud sync disabled - skipping")
@@ -59,11 +59,11 @@ class CarManager: ObservableObject {
             
             switch result {
             case .success(let cloudCars):
-                // Merge con i dati locali
+                
                 for cloudCar in cloudCars {
-                    // Controlla se l'auto esiste già
+                    
                     if !self.cars.contains(where: { $0.id == cloudCar.id }) {
-                        // Aggiungi nuova auto dal cloud
+                        
                         let newCar = Car(
                             id: cloudCar.id,
                             brand: cloudCar.brand,
@@ -80,7 +80,7 @@ class CarManager: ObservableObject {
                 try? self.modelContext?.save()
                 self.successMessage = "Synced with iCloud"
                 
-                // Nascondi messaggio dopo 2 secondi
+               
                 DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
                     self.successMessage = nil
                 }
@@ -92,9 +92,9 @@ class CarManager: ObservableObject {
         }
     }
     
-    // Aggiungi auto (SwiftData + CloudKit opzionale)
+    
     func addCar(_ car: Car) {
-        // Salva SEMPRE localmente con SwiftData
+        
         modelContext?.insert(car)
         cars.insert(car, at: 0)
         
@@ -105,7 +105,7 @@ class CarManager: ObservableObject {
             print("❌ Error saving to SwiftData: \(error)")
         }
         
-        // Salva su CloudKit SOLO se iCloud è abilitato
+
         if iCloudSyncEnabled {
             isSyncing = true
             cloudKitManager.saveCar(
@@ -118,14 +118,14 @@ class CarManager: ObservableObject {
                 
                 switch result {
                 case .success(let recordName):
-                    // Aggiorna con il recordName di CloudKit
+                    
                     car.cloudKitRecordName = recordName
                     try? self?.modelContext?.save()
                     self?.successMessage = "Saved to iCloud"
                     
                     print("☁️ Car synced to iCloud")
                     
-                    // Nascondi messaggio dopo 2 secondi
+                   
                     DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
                         self?.successMessage = nil
                     }
@@ -140,9 +140,9 @@ class CarManager: ObservableObject {
         }
     }
     
-    // Elimina auto (SwiftData + CloudKit opzionale)
+    
     func deleteCar(_ car: Car) {
-        // Rimuovi localmente
+        
         modelContext?.delete(car)
         cars.removeAll { $0.id == car.id }
         
@@ -153,7 +153,7 @@ class CarManager: ObservableObject {
             print("❌ Error deleting from SwiftData: \(error)")
         }
         
-        // Elimina da CloudKit SOLO se iCloud è abilitato E il record esiste
+        
         if iCloudSyncEnabled, let recordName = car.cloudKitRecordName {
             cloudKitManager.deleteCar(recordName: recordName) { result in
                 switch result {

@@ -23,7 +23,7 @@ struct HomePageContent: View {
                 
                 if !carManager.cars.isEmpty {
                     RecentCarsSection(
-                        cars: Array(carManager.cars.prefix(5)),
+                        cars: carManager.cars,
                         carManager: carManager,
                         selectedTab: $selectedTab
                     )
@@ -267,7 +267,7 @@ struct RecentCarsSection: View {
             
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack(spacing: 12) {
-                    ForEach(cars) { car in
+                    ForEach(cars.sorted(by: { $0.date > $1.date }).prefix(5)) { car in
                         NavigationLink(destination: CarDetailView(car: car, carManager: carManager)) {
                             HoverableCarCard(car: car)
                         }
@@ -289,7 +289,7 @@ struct RecentCarsSection: View {
 // MARK: - Hoverable Car Card
 struct HoverableCarCard: View {
     let car: Car
-    @State private var isHovered = false
+    @State private var isPressed = false
     
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
@@ -316,12 +316,9 @@ struct HoverableCarCard: View {
         .padding(12)
         .background(Color(.secondarySystemBackground))
         .cornerRadius(16)
-        .shadow(color: .black.opacity(isHovered ? 0.15 : 0.05), radius: isHovered ? 12 : 4, x: 0, y: isHovered ? 8 : 2)
-        .scaleEffect(isHovered ? 1.05 : 1.0)
-        .animation(.spring(response: 0.3, dampingFraction: 0.7), value: isHovered)
-        .onLongPressGesture(minimumDuration: 0.01, pressing: { pressing in
-            isHovered = pressing
-        }, perform: {})
+        .shadow(color: .black.opacity(isPressed ? 0.15 : 0.05), radius: isPressed ? 12 : 4, x: 0, y: isPressed ? 8 : 2)
+        .scaleEffect(isPressed ? 1.05 : 1.0)
+        .animation(.spring(response: 0.3, dampingFraction: 0.7), value: isPressed)
     }
 }
 

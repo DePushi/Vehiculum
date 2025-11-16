@@ -44,7 +44,7 @@ struct CarFormView: View {
                                 Text("Detecting...")
                             } else {
                                 Image(systemName: "sparkles")
-                                Text("Detect Mercedes Logo")
+                                Text("Detect Car Logo")
                             }
                         }
                         .frame(maxWidth: .infinity)
@@ -54,15 +54,15 @@ struct CarFormView: View {
                 } header: {
                     Text("AI Detection")
                 } footer: {
-                    Text("Use AI to automatically detect Mercedes logo")
+                    Text("Use AI to automatically detect cars logo")
                 }
                 
                 Section {
-                    TextField("e.g., Ferrari, BMW, Fiat...", text: $brand)
+                    TextField("Brand (ex. Mercedes-Benz, Audi, Volkswagen...)", text: $brand)
                         .focused($focusedField, equals: .brand)
                         .autocapitalization(.words)
                     
-                    TextField("e.g., 488 GTB, Series 3, Panda...", text: $model)
+                    TextField("Model (ex. C-Class, A4, Golf...)", text: $model)
                         .focused($focusedField, equals: .model)
                         .autocapitalization(.words)
                 } header: {
@@ -101,24 +101,23 @@ struct CarFormView: View {
     
     private func detectMercedesLogo() {
         isDetecting = true
-        focusedField = nil // Chiudi la tastiera
+        focusedField = nil
         
         MercedesDetectionService.shared.detectMercedesLogo(in: image) { success, message in
             isDetecting = false
             
             if success {
-                // Logo Mercedes rilevato!
-                brand = "Mercedes"
-                detectionMessage = message ?? "Mercedes logo detected!"
                 
-                // Feedback tattile
+                brand = "Mercedes"
+                detectionMessage = message ?? "Logo detected!"
+                
                 let generator = UINotificationFeedbackGenerator()
                 generator.notificationOccurred(.success)
             } else {
-                // Logo non rilevato
-                detectionMessage = message ?? "No Mercedes logo found. Please enter brand manually."
                 
-                // Feedback tattile
+                detectionMessage = message ?? "No logo found. Please enter brand manually."
+                
+                
                 let generator = UINotificationFeedbackGenerator()
                 generator.notificationOccurred(.warning)
             }

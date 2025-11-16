@@ -149,14 +149,6 @@ struct CarCard: View {
         .shadow(color: .black.opacity(isPressed ? 0.15 : 0.1), radius: isPressed ? 8 : 5, x: 0, y: isPressed ? 4 : 2)
         .scaleEffect(isPressed ? 0.97 : 1.0)
         .animation(.spring(response: 0.3, dampingFraction: 0.7), value: isPressed)
-        .onLongPressGesture(minimumDuration: 0.01, pressing: { pressing in
-            isPressed = pressing
-            
-            if pressing {
-                let generator = UIImpactFeedbackGenerator(style: .light)
-                generator.impactOccurred()
-            }
-        }, perform: {})
     }
 }
 
