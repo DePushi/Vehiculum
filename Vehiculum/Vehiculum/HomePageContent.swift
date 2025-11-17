@@ -69,37 +69,21 @@ struct HomePageContent: View {
 // MARK: - Hero Section
 struct HeroSection: View {
     var body: some View {
-        VStack(spacing: 20) {
-            ZStack {
-                Circle()
-                    .fill(
-                        LinearGradient(
-                            gradient: Gradient(colors: [
-                                Color.blue.opacity(0.6),
-                                Color.blue
-                            ]),
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
-                        )
-                    )
-                    .frame(width: 100, height: 100)
-                    .shadow(color: .blue.opacity(0.3), radius: 15, x: 0, y: 8)
-                
-                Image(systemName: "car.2.fill")
-                    .font(.system(size: 45))
-                    .foregroundColor(.white)
-            }
-            .padding(.top, 40)
+        VStack(spacing: 12) {
+            Text("Vehiculum")
+                .font(.system(size: 40, weight: .bold, design: .rounded))
             
-            VStack(spacing: 8) {
-                Text("Vehiculum")
-                    .font(.system(size: 36, weight: .bold))
+            HStack(spacing: 6) {
+                Image(systemName: "camera.fill")
+                    .font(.system(size: 14, weight: .semibold))
+                    .foregroundColor(.blue)
                 
                 Text("Your digital car collection")
-                    .font(.system(size: 17))
+                    .font(.system(size: 17, weight: .medium))
                     .foregroundColor(.secondary)
             }
         }
+        .padding(.top, 40)
         .padding(.bottom, 40)
     }
 }
@@ -107,6 +91,7 @@ struct HeroSection: View {
 // MARK: - Stats Section
 struct StatsSection: View {
     let carCount: Int
+    @State private var barsPressed = false
     
     var body: some View {
         HStack {
@@ -126,9 +111,22 @@ struct StatsSection: View {
             
             Spacer()
             
-            Image(systemName: "chart.bar.fill")
-                .font(.system(size: 40))
-                .foregroundColor(.blue.opacity(0.3))
+            // Icona interattiva con le 3 barre basate sul numero di auto
+            DynamicBarsIcon(carCount: carCount, isPressed: $barsPressed)
+                .onTapGesture {
+                    withAnimation(.spring(response: 0.3, dampingFraction: 0.6)) {
+                        barsPressed = true
+                    }
+                    
+                    let generator = UIImpactFeedbackGenerator(style: .medium)
+                    generator.impactOccurred()
+                    
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
+                        withAnimation(.spring(response: 0.3, dampingFraction: 0.6)) {
+                            barsPressed = false
+                        }
+                    }
+                }
         }
         .padding(24)
         .background(Color(.secondarySystemBackground))
@@ -138,6 +136,102 @@ struct StatsSection: View {
     }
 }
 
+// MARK: - Dynamic Bars Icon
+struct DynamicBarsIcon: View {
+    let carCount: Int
+    @Binding var isPressed: Bool
+    @State private var animatedBar1: CGFloat = 0
+    @State private var animatedBar2: CGFloat = 0
+    @State private var animatedBar3: CGFloat = 0
+    
+    // Calcola l'altezza delle barre in base al numero di auto
+    private var bar1Height: CGFloat {
+        min(CGFloat(carCount) / 30.0, 1.0) // Max a 30 auto = 100%
+    }
+    
+    private var bar2Height: CGFloat {
+        min(CGFloat(carCount) / 20.0, 1.0) // Max a 20 auto = 100%
+    }
+    
+    private var bar3Height: CGFloat {
+        min(CGFloat(carCount) / 10.0, 1.0) // Max a 10 auto = 100%
+    }
+    
+    var body: some View {
+        HStack(alignment: .bottom, spacing: 6) {
+            // Barra 1 (più bassa - cresce più lentamente)
+            RoundedRectangle(cornerRadius: 3, style: .continuous)
+                .fill(
+                    LinearGradient(
+                        colors: [
+                            carCount > 0 ? .blue : .gray.opacity(0.3),
+                            carCount > 0 ? .blue.opacity(0.7) : .gray.opacity(0.2)
+                        ],
+                        startPoint: .top,
+                        endPoint: .bottom
+                    )
+                )
+                .frame(width: 8, height: 40 * max(animatedBar1, 0.2)) // Minimo 20%
+                .scaleEffect(isPressed ? 0.9 : 1.0)
+            
+            // Barra 2 (media - cresce a velocità media)
+            RoundedRectangle(cornerRadius: 3, style: .continuous)
+                .fill(
+                    LinearGradient(
+                        colors: [
+                            carCount > 0 ? .blue : .gray.opacity(0.3),
+                            carCount > 0 ? .blue.opacity(0.7) : .gray.opacity(0.2)
+                        ],
+                        startPoint: .top,
+                        endPoint: .bottom
+                    )
+                )
+                .frame(width: 8, height: 40 * max(animatedBar2, 0.4)) // Minimo 40%
+                .scaleEffect(isPressed ? 0.9 : 1.0)
+            
+            // Barra 3 (più alta - cresce più velocemente)
+            RoundedRectangle(cornerRadius: 3, style: .continuous)
+                .fill(
+                    LinearGradient(
+                        colors: [
+                            carCount > 0 ? .blue : .gray.opacity(0.3),
+                            carCount > 0 ? .blue.opacity(0.7) : .gray.opacity(0.2)
+                        ],
+                        startPoint: .top,
+                        endPoint: .bottom
+                    )
+                )
+                .frame(width: 8, height: 40 * max(animatedBar3, 0.6)) // Minimo 60%
+                .scaleEffect(isPressed ? 0.9 : 1.0)
+        }
+        .frame(height: 40)
+        .onChange(of: carCount) { oldValue, newValue in
+            animateBars()
+        }
+        .onAppear {
+            animateBars()
+        }
+    }
+    
+    private func animateBars() {
+        // Animazione sequenziale delle barre
+        withAnimation(.spring(response: 0.6, dampingFraction: 0.7)) {
+            animatedBar1 = bar1Height
+        }
+        
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+            withAnimation(.spring(response: 0.6, dampingFraction: 0.7)) {
+                animatedBar2 = bar2Height
+            }
+        }
+        
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
+            withAnimation(.spring(response: 0.6, dampingFraction: 0.7)) {
+                animatedBar3 = bar3Height
+            }
+        }
+    }
+}
 // MARK: - Quick Actions Section
 struct QuickActionsSection: View {
     let onTakePhoto: () -> Void
@@ -319,6 +413,17 @@ struct HoverableCarCard: View {
         .shadow(color: .black.opacity(isPressed ? 0.15 : 0.05), radius: isPressed ? 12 : 4, x: 0, y: isPressed ? 8 : 2)
         .scaleEffect(isPressed ? 1.05 : 1.0)
         .animation(.spring(response: 0.3, dampingFraction: 0.7), value: isPressed)
+    }
+}
+
+// MARK: - Animated Counter
+struct AnimetedCounter: View {
+    let value: Int
+    
+    var body: some View {
+        Text("\(value)")
+            .font(.system(size: 36, weight: .bold, design: .rounded))
+            .contentTransition(.numericText())
     }
 }
 
